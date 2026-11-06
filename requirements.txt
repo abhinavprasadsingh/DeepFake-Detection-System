@@ -1,6 +1,5 @@
-streamlit
+﻿Flask
+gunicorn
 numpy
-pandas
 Pillow
 opencv-python-headless
-scikit-learn

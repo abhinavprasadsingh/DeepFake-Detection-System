@@ -1,176 +1,92 @@
-import streamlit as st
-from PIL import Image
-import os
+﻿import os, io, tempfile
+from base64 import b64encode
+import cv2
+import numpy as np
+from PIL import Image, UnidentifiedImageError
+from flask import Flask, jsonify, render_template, request
 
-st.set_page_config(
-    page_title="DeepFake Detection",
-    page_icon="??",
-    layout="wide",
-    initial_sidebar_state="expanded"
+app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = 40 * 1024 * 1024
+cascade = cv2.CascadeClassifier(
+    cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
 )
 
-st.markdown("""
-<style>
-.main {
-    background: #10111B;
-}
-.block-container {
-    max-width: 1150px;
-    padding-top: 2rem;
-}
-.hero {
-    padding: 28px;
-    border: 1px solid #34364A;
-    border-radius: 18px;
-    background: linear-gradient(120deg, #22233C, #171827);
-    margin-bottom: 24px;
-}
-.hero h1 {
-    font-size: 36px;
-    margin-bottom: 8px;
-}
-.hero p {
-    color: #C4C5D5;
-    font-size: 16px;
-}
-.info-card {
-    background: #1B1D2B;
-    padding: 20px;
-    border: 1px solid #34364A;
-    border-radius: 14px;
-    min-height: 130px;
-}
-.small-text {
-    color: #A8AABD;
-    font-size: 13px;
-}
-</style>
-""", unsafe_allow_html=True)
+def inspect_frame(frame):
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    faces = cascade.detectMultiScale(gray, 1.1, 5, minSize=(32, 32))
+    preview = frame.copy()
+    for x, y, w, h in faces:
+        cv2.rectangle(preview, (x,y), (x+w,y+h), (90,225,175), 2)
+    image = Image.fromarray(cv2.cvtColor(preview, cv2.COLOR_BGR2RGB))
+    buffer = io.BytesIO()
+    image.save(buffer, format="JPEG", quality=82)
+    return len(faces), "data:image/jpeg;base64," + b64encode(buffer.getvalue()).decode()
 
-with st.sidebar:
-    st.title("?? DeepFake AI")
-    st.caption("Image and video analysis")
-    st.divider()
-    page = st.radio(
-        "Navigation",
-        ["Home", "Image Analysis", "Video Analysis", "About"]
-    )
-    st.divider()
-    st.caption("A student project built using Python and machine learning.")
+@app.get("/")
+def home():
+    return render_template("index.html")
 
-if page == "Home":
-    st.markdown("""
-    <div class="hero">
-        <h1>DeepFake Detection System</h1>
-        <p>
-        A simple tool to explore whether an image or video may
-        contain AI-generated or manipulated faces.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+@app.get("/health")
+def health():
+    return jsonify(status="ok", service="DeepFake Studio")
 
-    st.subheader("Welcome!")
+@app.post("/api/analyze/image")
+def analyze_image():
+    f = request.files.get("file")
+    if not f:
+        return jsonify(error="Choose an image first."), 400
+    if f.filename.rsplit(".",1)[-1].lower() not in ("png","jpg","jpeg","webp"):
+        return jsonify(error="Unsupported image format."), 400
+    try:
+        im = Image.open(f.stream).convert("RGB")
+        frame = cv2.cvtColor(np.array(im), cv2.COLOR_RGB2BGR)
+        count, preview = inspect_frame(frame)
+        return jsonify(filename=f.filename, width=im.width, height=im.height,
+                       faces=count, preview=preview,
+                       notice="Face location only, not deepfake classification.")
+    except (UnidentifiedImageError, OSError, ValueError):
+        return jsonify(error="Could not read this image."), 400
 
-    st.write(
-        "Online images and videos can be edited in ways that are "
-        "difficult to notice. This project aims to make it easier "
-        "to examine media using machine learning."
-    )
+@app.post("/api/analyze/video")
+def analyze_video():
+    f = request.files.get("file")
+    if not f:
+        return jsonify(error="Choose a video first."), 400
+    ext = f.filename.rsplit(".",1)[-1].lower()
+    if ext not in ("mp4","mov","avi","mkv"):
+        return jsonify(error="Unsupported video format."), 400
+    path = None
+    cap = None
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix="."+ext) as tmp:
+            f.save(tmp)
+            path = tmp.name
+        cap = cv2.VideoCapture(path)
+        if not cap.isOpened():
+            return jsonify(error="Cannot open video."), 400
+        total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        if total <= 0:
+            return jsonify(error="No readable frames."), 400
+        indices = np.linspace(0,total-1,min(8,total),dtype=int)
+        samples = []
+        for i in indices:
+            cap.set(cv2.CAP_PROP_POS_FRAMES,int(i))
+            ok, frame = cap.read()
+            if ok:
+                count, preview = inspect_frame(frame)
+                samples.append(dict(frame=int(i),faces=count,preview=preview))
+        return jsonify(total_frames=total,sampled_frames=len(samples),
+                       frames_with_faces=sum(x["faces"]>0 for x in samples),
+                       face_detections=sum(x["faces"] for x in samples),
+                       samples=samples,
+                       notice="Sampled-frame face location only, not deepfake classification.")
+    finally:
+        if cap: cap.release()
+        if path and os.path.exists(path): os.remove(path)
 
-    col1, col2 = st.columns(2)
+@app.errorhandler(413)
+def too_large(e):
+    return jsonify(error="Maximum upload size is 40 MB."), 413
 
-    with col1:
-        st.markdown("""
-        <div class="info-card">
-            <h3>??? Image Analysis</h3>
-            <p class="small-text">
-            Upload an image and prepare it for deepfake analysis.
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    with col2:
-        st.markdown("""
-        <div class="info-card">
-            <h3>?? Video Analysis</h3>
-            <p class="small-text">
-            Upload a video and prepare its frames for analysis.
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.write("")
-    st.info(
-        "The detection model is still being developed. "
-        "Predictions will be available after training and integration."
-    )
-
-elif page == "Image Analysis":
-    st.title("Image Analysis")
-    st.write("Upload an image containing a face to get started.")
-
-    uploaded = st.file_uploader(
-        "Choose an image",
-        type=["jpg", "jpeg", "png"]
-    )
-
-    if uploaded:
-        image = Image.open(uploaded).convert("RGB")
-        st.image(image, caption="Uploaded image", use_container_width=True)
-
-        st.info(
-            "Your image has been uploaded successfully. "
-            "The trained detection model will be connected here next."
-        )
-    else:
-        st.caption("Supported formats: JPG, JPEG and PNG.")
-
-elif page == "Video Analysis":
-    st.title("Video Analysis")
-    st.write("Upload a short video for frame-based analysis.")
-
-    uploaded = st.file_uploader(
-        "Choose a video",
-        type=["mp4", "mov", "avi"]
-    )
-
-    if uploaded:
-        st.video(uploaded)
-        st.info(
-            "Video upload is working. Frame extraction and "
-            "deepfake predictions will be added after model training."
-        )
-    else:
-        st.caption("Supported formats: MP4, MOV and AVI.")
-
-elif page == "About":
-    st.title("About this project")
-
-    st.write("""
-    This project is being developed as part of my learning in
-    artificial intelligence and machine learning.
-
-    The main goal is to understand how deepfake detection works
-    and build a practical application around it.
-    """)
-
-    st.subheader("Technologies used")
-
-    st.write("""
-    - Python
-    - Machine Learning
-    - PyTorch (for model training)
-    - OpenCV (for image and video processing)
-    - Streamlit (for the website)
-    """)
-
-    st.subheader("A small note")
-
-    st.write(
-        "The result of an AI detector should not be treated as "
-        "absolute proof. Detection models can make mistakes, "
-        "especially with unfamiliar or heavily edited media."
-    )
-
-st.divider()
-st.caption("DeepFake Detection System | Student ML Project")
+if __name__ == "__main__":
+    app.run(host="0.0.0.0",port=int(os.environ.get("PORT",5000)))

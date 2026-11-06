@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DeepFake Studio | Media Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<aside class="sidebar">
+<a class="brand" href="#">◈ deepfake<span>.</span></a>
+<div class="muted">WORKSPACE</div>
+<button class="nav active" data-page="home">⌂ &nbsp; Overview</button>
+<button class="nav" data-page="image">▧ &nbsp; Image analysis</button>
+<button class="nav" data-page="video">▷ &nbsp; Video analysis</button>
+<div class="status">● System operational</div>
+</aside>
+<main>
+<header><span>Workspace / <b id="crumb">Overview</b></span><span class="muted">PRIVATE SESSION</span></header>
+<section id="home" class="page active">
+<div class="hero">
+<div class="eyebrow">MEDIA INTELLIGENCE WORKSPACE</div>
+<h1>See beyond the <em>surface.</em></h1>
+<p>A modern workspace to inspect digital media, locate faces and prepare content for deeper authenticity analysis.</p>
+<button class="primary" data-go="image">Analyze an image ↗</button>
+<button class="secondary" data-go="video">Explore video tools →</button>
+<div class="orb">◈<small>VISUAL SCANNING</small></div>
+</div>
+<h2>Choose an analysis mode</h2>
+<div class="cards">
+<button class="tool" data-go="image"><b>▧ &nbsp; Image analysis ↗</b><p>Inspect still images and locate visible faces.</p><small>PNG · JPG · WEBP</small></button>
+<button class="tool" data-go="video"><b>▷ &nbsp; Video analysis ↗</b><p>Sample frames and review face locations.</p><small>MP4 · MOV · AVI</small></button>
+</div>
+<div class="notice">ⓘ This version performs face-location analysis only. A trained deepfake classification model is not connected yet.</div>
+</section>
+<section id="image" class="page">
+<div class="eyebrow">TOOL / 01</div><h1>Image <em>analysis.</em></h1>
+<p class="muted">Upload an image to locate faces.</p>
+<div class="columns">
+<div class="panel"><h3>Source image</h3><label class="drop" for="imageFile">＋<b>Drop image here</b><span>or browse files</span><small>PNG · JPG · WEBP</small><input id="imageFile" type="file" accept="image/png,image/jpeg,image/webp"></label><button class="primary run" id="imageRun">Run inspection ↗</button></div>
+<div class="panel"><h3>Inspection result</h3><div id="imageResult" class="empty">Your image preview will appear here.</div></div>
+</div>
+</section>
+<section id="video" class="page">
+<div class="eyebrow">TOOL / 02</div><h1>Video <em>analysis.</em></h1>
+<p class="muted">Inspect selected frames from a video.</p>
+<div class="columns">
+<div class="panel"><h3>Source video</h3><label class="drop" for="videoFile">＋<b>Drop video here</b><span>or browse files</span><small>MP4 · MOV · AVI · MKV</small><input id="videoFile" type="file" accept="video/mp4,video/quicktime,video/x-msvideo,video/x-matroska"></label><button class="primary run" id="videoRun">Run inspection ↗</button></div>
+<div class="panel"><h3>Frame inspection</h3><div id="videoResult" class="empty">Your frame analysis will appear here.</div></div>
+</div>
+</section>
+<footer>DEEPFAKE STUDIO © 2026 <span>POWERED BY FLASK · RENDER</span></footer>
+</main>
+<script src="/static/js/app.js"></script>
+</body>
+</html>
