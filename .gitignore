@@ -8,3 +8,7 @@ models/*.pth
 models/*.pt
 models/*.pkl
 results/
+
+instance/
+*.db
+

@@ -2,57 +2,248 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DeepFake Studio | Media Intelligence</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/static/css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080a12;--panel:#101522;--panel2:#141b2b;--line:#222c40;--text:#f4f6ff;--muted:#8b96ad;--purple:#8b5cf6;--blue:#4f8cff;--cyan:#49d9e9;--green:#43d6a0}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 75% 0%,#192044 0,transparent 38%),var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
+button,input{font:inherit}
+button{cursor:pointer}
+.layout{display:grid;grid-template-columns:245px 1fr;min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;border-right:1px solid var(--line);padding:26px 18px;background:#0b0e18eF;display:flex;flex-direction:column}
+.logo{display:flex;align-items:center;gap:11px;padding:0 10px 32px;font-family:'Space Grotesk';font-size:19px;font-weight:700}
+.logo-icon{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,var(--purple),var(--blue));display:grid;place-items:center;box-shadow:0 5px 25px #7653f755}
+.logo small{display:block;font:10px 'DM Sans';letter-spacing:2px;color:var(--muted);margin-top:3px}
+.nav-label{font-size:10px;letter-spacing:1.7px;color:#64708a;padding:13px 12px}
+.nav{border:0;background:transparent;color:var(--muted);padding:12px;border-radius:11px;text-align:left;display:flex;gap:12px;align-items:center;margin:3px 0;width:100%;font-size:13px}
+.nav:hover,.nav.active{background:#25213d;color:white}
+.nav.active{box-shadow:inset 3px 0 var(--purple)}
+.sidebar-bottom{margin-top:auto}
+.model-card{border:1px solid var(--line);background:linear-gradient(145deg,#171b31,#101522);padding:15px;border-radius:15px}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:7px;box-shadow:0 0 12px var(--green)}
+.model-card p{color:var(--muted);font-size:11px;line-height:1.6}
+main{padding:27px clamp(18px,4vw,55px) 60px;max-width:1600px;width:100%;margin:auto}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:35px}
+.crumb{font-size:12px;color:var(--muted)}
+.user{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px}
+.avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#8b5cf6,#2878e9);color:white;font-weight:700}
+.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:25px;margin-bottom:30px}
+.eyebrow{color:#a78bfa;letter-spacing:2px;font-size:10px;font-weight:700}
+h1,h2,h3{font-family:'Space Grotesk',sans-serif}
+h1{font-size:clamp(32px,5vw,55px);line-height:1.08;letter-spacing:-2px;margin:12px 0}
+h1 span{background:linear-gradient(90deg,#c4a5ff,#64b5ff);background-clip:text;color:transparent}
+.subtitle{color:var(--muted);font-size:13px;line-height:1.7;max-width:570px}
+.status{border:1px solid #244c47;background:#10231f;color:#78e7bd;padding:10px 14px;border-radius:30px;font-size:11px;white-space:nowrap}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:25px 0}
+.stat,.panel{background:linear-gradient(145deg,#131a29,#0e1420);border:1px solid var(--line);border-radius:17px}
+.stat{padding:19px}
+.stat-top{display:flex;justify-content:space-between;color:var(--muted);font-size:11px}
+.stat-icon{color:#b69aff;font-size:18px}
+.stat-value{font:700 27px 'Space Grotesk';margin-top:13px}
+.stat-note{font-size:10px;color:var(--muted);margin-top:5px}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin:35px 0 15px}
+.section-head h2{font-size:19px;margin:0}
+.section-head span{font-size:11px;color:var(--muted)}
+.analysis-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.panel{padding:23px}
+.panel h3{margin:0 0 7px;font-size:16px}
+.panel p{font-size:12px;color:var(--muted);line-height:1.6}
+.panel-icon{width:43px;height:43px;border-radius:13px;display:grid;place-items:center;font-size:20px;margin-bottom:18px;background:#292044;color:#c7aaff}
+.video .panel-icon{background:#172c47;color:#83c3ff}
+.drop{border:1px dashed #3a4560;border-radius:13px;padding:25px 15px;text-align:center;background:#0b111d;transition:.2s;cursor:pointer;margin-top:16px}
+.drop:hover,.drop.drag{border-color:#a78bfa;background:#18152b}
+.drop strong{display:block;font-size:12px;margin:7px}
+.drop small{color:var(--muted);font-size:10px}
+.btn{border:0;border-radius:10px;padding:11px 17px;color:white;background:linear-gradient(100deg,#8156e9,#397fe9);font-weight:700;font-size:11px;box-shadow:0 5px 20px #6545ce33}
+.btn:disabled{opacity:.5;cursor:wait}
+.btn-secondary{background:#20283a;box-shadow:none;border:1px solid var(--line)}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+input[type=file]{display:none}
+.result{margin-top:18px;border-top:1px solid var(--line);padding-top:16px;display:none}
+.result.show{display:block}
+.result-title{font-size:13px;font-weight:700;margin-bottom:9px}
+.result-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.result-box{background:#0a101c;border:1px solid var(--line);border-radius:10px;padding:12px}
+.result-box small{color:var(--muted);font-size:10px}
+.result-box strong{display:block;margin-top:6px;font-size:14px}
+.notice{padding:12px;border-radius:10px;background:#241e35;border:1px solid #49376b;color:#cbb9ff;font-size:11px;line-height:1.6;margin-top:12px}
+.history{width:100%;border-collapse:collapse;font-size:11px}
+.history th{text-align:left;color:var(--muted);font-weight:500;padding:12px 9px;border-bottom:1px solid var(--line)}
+.history td{padding:14px 9px;border-bottom:1px solid #20283a}
+.history tr:last-child td{border:0}
+.pill{padding:5px 9px;border-radius:20px;background:#20283a;color:#bdc7dc;font-size:10px}
+footer{margin-top:45px;padding-top:20px;border-top:1px solid var(--line);display:flex;justify-content:space-between;color:#65718a;font-size:10px;gap:10px;flex-wrap:wrap}
+.page{display:none}.page.active{display:block}
+.loader{display:none;color:#bca8ff;font-size:11px;margin-top:12px}
+.loader.show{display:block}
+@media(max-width:950px){.layout{grid-template-columns:75px 1fr}.sidebar{padding:20px 10px}.logo{padding:0 8px 30px}.logo-text,.nav-label,.nav span,.model-card{display:none}.nav{justify-content:center;font-size:18px}.logo-icon{margin:auto}}
+@media(max-width:650px){.layout{display:block}.sidebar{position:relative;height:auto;padding:10px;flex-direction:row;align-items:center;justify-content:space-around;border-right:0;border-bottom:1px solid var(--line)}.logo{padding:0}.logo-icon{width:34px;height:34px}.nav{width:auto;margin:0;padding:10px}.nav span{display:none}.sidebar-bottom{display:none}main{padding:20px 14px}.hero{display:block}.status{display:inline-block;margin-top:15px}.stats{grid-template-columns:1fr 1fr}.analysis-grid{grid-template-columns:1fr}.history th:nth-child(3),.history td:nth-child(3){display:none}.topbar{margin-bottom:25px}}
+</style>
 </head>
 <body>
+<div class="layout">
 <aside class="sidebar">
-<a class="brand" href="#">◈ deepfake<span>.</span></a>
-<div class="muted">WORKSPACE</div>
-<button class="nav active" data-page="home">⌂ &nbsp; Overview</button>
-<button class="nav" data-page="image">▧ &nbsp; Image analysis</button>
-<button class="nav" data-page="video">▷ &nbsp; Video analysis</button>
-<div class="status">● System operational</div>
+  <div class="logo"><div class="logo-icon">◈</div><div class="logo-text">deepfake.<small>MEDIA INTELLIGENCE</small></div></div>
+  <div style="width:100%">
+    <div class="nav-label">WORKSPACE</div>
+    <button class="nav active" data-page="home">⌂ <span>Overview</span></button>
+    <button class="nav" data-page="image">▧ <span>Image analysis</span></button>
+    <button class="nav" data-page="video">▷ <span>Video analysis</span></button>
+    <div class="nav-label">MANAGEMENT</div>
+    <button class="nav" data-page="history">◷ <span>Scan history</span></button>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="model-card"><div style="font-size:11px"><i class="dot"></i>System online</div><p>Media analysis workspace. AI classification availability depends on server configuration.</p></div>
+  </div>
 </aside>
+
 <main>
-<header><span>Workspace / <b id="crumb">Overview</b></span><span class="muted">PRIVATE SESSION</span></header>
-<section id="home" class="page active">
-<div class="hero">
-<div class="eyebrow">MEDIA INTELLIGENCE WORKSPACE</div>
-<h1>See beyond the <em>surface.</em></h1>
-<p>A modern workspace to inspect digital media, locate faces and prepare content for deeper authenticity analysis.</p>
-<button class="primary" data-go="image">Analyze an image ↗</button>
-<button class="secondary" data-go="video">Explore video tools →</button>
-<div class="orb">◈<small>VISUAL SCANNING</small></div>
+<div class="topbar"><div class="crumb">Workspace / <b id="crumb">Overview</b></div><div class="user"><span>PRIVATE SESSION</span><div class="avatar">D</div></div></div>
+
+<section class="page active" id="home">
+<div class="hero"><div><div class="eyebrow">MEDIA INTELLIGENCE WORKSPACE</div><h1>See beyond the<br><span>surface.</span></h1><p class="subtitle">Inspect digital media, locate faces, and run AI-assisted authenticity analysis from one secure workspace.</p></div><div class="status"><i class="dot"></i>System operational</div></div>
+<div class="stats">
+ <div class="stat"><div class="stat-top">Total scans <span class="stat-icon">◈</span></div><div class="stat-value" id="totalScans">—</div><div class="stat-note">Saved in this instance</div></div>
+ <div class="stat"><div class="stat-top">AI engine <span class="stat-icon">✧</span></div><div class="stat-value" id="aiStatus" style="font-size:17px">Checking</div><div class="stat-note">Inference configuration</div></div>
+ <div class="stat"><div class="stat-top">Face detection <span class="stat-icon">◎</span></div><div class="stat-value" id="faceStatus" style="font-size:17px">Checking</div><div class="stat-note">OpenCV engine</div></div>
+ <div class="stat"><div class="stat-top">Workspace <span class="stat-icon">⌁</span></div><div class="stat-value" style="font-size:17px">Active</div><div class="stat-note">Flask application</div></div>
 </div>
-<h2>Choose an analysis mode</h2>
-<div class="cards">
-<button class="tool" data-go="image"><b>▧ &nbsp; Image analysis ↗</b><p>Inspect still images and locate visible faces.</p><small>PNG · JPG · WEBP</small></button>
-<button class="tool" data-go="video"><b>▷ &nbsp; Video analysis ↗</b><p>Sample frames and review face locations.</p><small>MP4 · MOV · AVI</small></button>
+<div class="section-head"><h2>Choose an analysis mode</h2><span>Two analysis workflows</span></div>
+<div class="analysis-grid">
+ <div class="panel"><div class="panel-icon">▧</div><h3>Image intelligence</h3><p>Upload a still image, inspect visible faces and request an AI classification estimate.</p><button class="btn" onclick="navigate('image')">Analyze an image ↗</button></div>
+ <div class="panel video"><div class="panel-icon">▷</div><h3>Video intelligence</h3><p>Sample video frames, locate faces and compare AI model predictions across frames.</p><button class="btn" onclick="navigate('video')">Explore video tools →</button></div>
 </div>
-<div class="notice">ⓘ This version performs face-location analysis only. A trained deepfake classification model is not connected yet.</div>
+<div class="section-head"><h2>Recent activity</h2><button class="btn btn-secondary" onclick="navigate('history')">View all</button></div>
+<div class="panel" style="overflow-x:auto"><table class="history"><thead><tr><th>FILE</th><th>TYPE</th><th>RESULT</th><th>DATE</th></tr></thead><tbody id="recentRows"><tr><td colspan="4">Loading activity…</td></tr></tbody></table></div>
 </section>
-<section id="image" class="page">
-<div class="eyebrow">TOOL / 01</div><h1>Image <em>analysis.</em></h1>
-<p class="muted">Upload an image to locate faces.</p>
-<div class="columns">
-<div class="panel"><h3>Source image</h3><label class="drop" for="imageFile">＋<b>Drop image here</b><span>or browse files</span><small>PNG · JPG · WEBP</small><input id="imageFile" type="file" accept="image/png,image/jpeg,image/webp"></label><button class="primary run" id="imageRun">Run inspection ↗</button></div>
-<div class="panel"><h3>Inspection result</h3><div id="imageResult" class="empty">Your image preview will appear here.</div></div>
-</div>
+
+<section class="page" id="image">
+<div class="eyebrow">VISUAL FORENSICS / 01</div><h1>Image <span>analysis.</span></h1><p class="subtitle">Inspect an image, detect faces and request an AI-assisted classification.</p>
+<div class="panel" style="margin-top:25px"><div class="panel-icon">▧</div><h3>Upload image</h3><p>Supported formats: JPG, JPEG, PNG and WEBP. Maximum size: 25 MB.</p>
+<div class="drop" id="imageDrop"><div style="font-size:26px">⇧</div><strong id="imageName">Drop your image here or browse</strong><small>Choose a file from your device</small><input type="file" id="imageFile" accept=".jpg,.jpeg,.png,.webp,image/*"></div>
+<div class="actions"><button class="btn" id="imageBtn" onclick="analyze('image')">Start image analysis →</button><button class="btn btn-secondary" onclick="clearResult('image')">Clear</button></div>
+<div class="loader" id="imageLoader">◌ Processing image. Please wait…</div><div class="result" id="imageResult"></div></div>
 </section>
-<section id="video" class="page">
-<div class="eyebrow">TOOL / 02</div><h1>Video <em>analysis.</em></h1>
-<p class="muted">Inspect selected frames from a video.</p>
-<div class="columns">
-<div class="panel"><h3>Source video</h3><label class="drop" for="videoFile">＋<b>Drop video here</b><span>or browse files</span><small>MP4 · MOV · AVI · MKV</small><input id="videoFile" type="file" accept="video/mp4,video/quicktime,video/x-msvideo,video/x-matroska"></label><button class="primary run" id="videoRun">Run inspection ↗</button></div>
-<div class="panel"><h3>Frame inspection</h3><div id="videoResult" class="empty">Your frame analysis will appear here.</div></div>
-</div>
+
+<section class="page" id="video">
+<div class="eyebrow">TEMPORAL FORENSICS / 02</div><h1>Video <span>analysis.</span></h1><p class="subtitle">Review sampled frames and inspect face locations across a video clip.</p>
+<div class="panel" style="margin-top:25px"><div class="panel-icon">▷</div><h3>Upload video</h3><p>Supported formats: MP4, MOV, AVI and MKV. Maximum size: 25 MB and duration: 5 minutes.</p>
+<div class="drop" id="videoDrop"><div style="font-size:26px">⇧</div><strong id="videoName">Drop your video here or browse</strong><small>Choose a video from your device</small><input type="file" id="videoFile" accept=".mp4,.mov,.avi,.mkv,video/*"></div>
+<div class="actions"><button class="btn" id="videoBtn" onclick="analyze('video')">Start video analysis →</button><button class="btn btn-secondary" onclick="clearResult('video')">Clear</button></div>
+<div class="loader" id="videoLoader">◌ Sampling frames and analyzing. This may take a little time…</div><div class="result" id="videoResult"></div></div>
 </section>
-<footer>DEEPFAKE STUDIO © 2026 <span>POWERED BY FLASK · RENDER</span></footer>
+
+<section class="page" id="history">
+<div class="eyebrow">WORKSPACE / RECORDS</div><h1>Scan <span>history.</span></h1><p class="subtitle">Review recent analyses and export individual JSON reports.</p>
+<div class="panel" style="margin-top:25px;overflow-x:auto"><table class="history"><thead><tr><th>FILE</th><th>TYPE</th><th>RESULT</th><th>DATE</th><th>REPORT</th></tr></thead><tbody id="historyRows"><tr><td colspan="5">Loading…</td></tr></tbody></table></div>
+</section>
+
+<footer><span>DEEPFAKE STUDIO © 2026</span><span>POWERED BY FLASK · OPENCV · AI INFERENCE</span><span>ANALYSIS IS NOT PROOF OF AUTHENTICITY</span></footer>
 </main>
-<script src="/static/js/app.js"></script>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+let currentPage='home';
+
+function navigate(page){
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ $(page).classList.add('active');
+ document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('active',n.dataset.page===page));
+ $('crumb').textContent={home:'Overview',image:'Image analysis',video:'Video analysis',history:'Scan history'}[page];
+ currentPage=page;
+ if(page==='history')loadHistory();
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('.nav').forEach(n=>n.addEventListener('click',()=>navigate(n.dataset.page)));
+
+function setupDrop(type){
+ const drop=$(type+'Drop'), input=$(type+'File'), name=$(type+'Name');
+ drop.addEventListener('click',()=>input.click());
+ input.addEventListener('change',()=>{name.textContent=input.files[0]?.name||'Drop your file here or browse';});
+ ['dragenter','dragover'].forEach(e=>drop.addEventListener(e,x=>{x.preventDefault();drop.classList.add('drag')}));
+ ['dragleave','drop'].forEach(e=>drop.addEventListener(e,x=>{x.preventDefault();drop.classList.remove('drag')}));
+ drop.addEventListener('drop',e=>{if(e.dataTransfer.files.length){input.files=e.dataTransfer.files;name.textContent=input.files[0].name;}});
+}
+setupDrop('image');setupDrop('video');
+
+function clearResult(type){
+ $(type+'Result').classList.remove('show');
+ $(type+'Result').innerHTML='';
+ $(type+'File').value='';
+ $(type+'Name').textContent='Drop your '+type+' here or browse';
+}
+
+function resultMarkup(data,type){
+ let pred=data.prediction;
+ let model=pred?.available;
+ let html=`<div class="result-title">Analysis complete</div>
+ <div class="result-grid">
+ <div class="result-box"><small>FACES DETECTED</small><strong>${data.faces??data.face_count??0}</strong></div>
+ <div class="result-box"><small>${type==='video'?'FRAMES ANALYZED':'IMAGE DIMENSIONS'}</small><strong>${type==='video'?(data.frames_analyzed||0):escapeHtml(data.dimensions||'—')}</strong></div>`;
+ if(type==='image'&&model){
+ html+=`<div class="result-box"><small>FAKE ESTIMATE</small><strong>${pred.fake_score}%</strong></div><div class="result-box"><small>MODEL VERDICT</small><strong>${escapeHtml(pred.verdict)}</strong></div>`;
+ }else if(type==='video'){
+ const scores=(data.frames||[]).map(f=>f.prediction).filter(p=>p.available);
+ const avg=scores.length?scores.reduce((a,p)=>a+p.fake_score,0)/scores.length:null;
+ html+=`<div class="result-box"><small>AI-SCORED FRAMES</small><strong>${scores.length}</strong></div><div class="result-box"><small>AVERAGE FAKE ESTIMATE</small><strong>${avg===null?'Unavailable':avg.toFixed(2)+'%'}</strong></div>`;
+ }
+ html+='</div>';
+ if(!model && type==='image')html+=`<div class="notice">${escapeHtml(pred?.message||'AI classification is not configured. Face analysis is available.')}</div>`;
+ if(type==='video'&&!(data.frames||[]).some(f=>f.prediction.available))html+=`<div class="notice">Video frame and face analysis completed. AI classification is not configured or available.</div>`;
+ html+=`<div class="notice">Important: AI model predictions are estimates, not proof. This model may not reliably detect newer manipulation techniques.</div>`;
+ if(type==='video'){
+ html+='<div style="margin-top:15px;font-size:12px;font-weight:700">FRAME TIMELINE</div>';
+ for(const f of (data.frames||[]))html+=`<div class="result-box" style="margin-top:8px"><small>FRAME AT ${f.timestamp_seconds}s</small><strong>${f.face_count} face(s) · ${f.prediction.available?f.prediction.fake_score+'% fake estimate':'AI unavailable'}</strong></div>`;
+ }
+ html+=`<div class="actions"><button class="btn btn-secondary" onclick="downloadReport('${data.scan_id}')">Download JSON report ↓</button></div>`;
+ return html;
+}
+function escapeHtml(v){return String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+async function analyze(type){
+ const input=$(type+'File'), file=input.files[0];
+ if(!file){alert('Please select a file first.');return;}
+ const btn=$(type+'Btn'), loader=$(type+'Loader'), result=$(type+'Result');
+ const form=new FormData();form.append('file',file);
+ btn.disabled=true;loader.classList.add('show');result.classList.remove('show');
+ try{
+ const response=await fetch('/api/analyze/'+type,{method:'POST',body:form});
+ const data=await response.json();
+ if(!response.ok)throw new Error(data.error||'Analysis failed.');
+ result.innerHTML=resultMarkup(data,type);result.classList.add('show');
+ loadStatus();loadRecent();
+ }catch(e){result.innerHTML=`<div class="notice">${escapeHtml(e.message)}</div>`;result.classList.add('show');}
+ finally{btn.disabled=false;loader.classList.remove('show');}
+}
+async function downloadReport(id){window.location.href='/api/report/'+encodeURIComponent(id);}
+async function loadStatus(){
+ try{
+ const r=await fetch('/api/status'),d=await r.json();
+ $('totalScans').textContent=d.total_scans;
+ $('aiStatus').textContent=d.classification_configured?'Connected':'Not set';
+ $('faceStatus').textContent=d.face_detection?'Ready':'Offline';
+ }catch(e){}
+}
+function rowMarkup(x,withReport){
+ const date=new Date(x.created).toLocaleString();
+ return `<tr><td>${escapeHtml(x.filename)}</td><td><span class="pill">${escapeHtml(x.media_type)}</span></td><td>${escapeHtml(x.verdict)}</td><td>${escapeHtml(date)}</td>${withReport?`<td><button class="btn btn-secondary" onclick="downloadReport('${x.id}')">Export</button></td>`:''}</tr>`;
+}
+async function loadRecent(){
+ try{
+ const r=await fetch('/api/history'),rows=await r.json();
+ $('recentRows').innerHTML=rows.length?rows.slice(0,5).map(x=>rowMarkup(x,false)).join(''):'<tr><td colspan="4">No scans yet. Start by analyzing an image or video.</td></tr>';
+ }catch(e){}
+}
+async function loadHistory(){
+ try{
+ const r=await fetch('/api/history'),rows=await r.json();
+ $('historyRows').innerHTML=rows.length?rows.map(x=>rowMarkup(x,true)).join(''):'<tr><td colspan="5">No scan history yet.</td></tr>';
+ }catch(e){$('historyRows').innerHTML='<tr><td colspan="5">Could not load history.</td></tr>';}
+}
+loadStatus();loadRecent();
+</script>
 </body>
 </html>
