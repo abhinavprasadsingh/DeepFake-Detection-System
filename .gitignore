@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.streamlit/secrets.toml
+dataset/raw/
+dataset/processed/
+models/*.pth
+models/*.pt
+models/*.pkl
+results/
